@@ -1,0 +1,15 @@
+Package: jigsaw
+Type: Package
+Title: Tools for Working With Observational Data
+Version: 0.1
+Date: 2015-10-29
+Author: Mark Danese
+Maintainer: Mark Danese <mark@outins.com>
+Description: This package has tools for working with observational data sets generated with Jigsaw
+License: TBD
+LazyData: TRUE
+Imports:
+    data.table,
+    jsonlite,
+    magrittr
+RoxygenNote: 5.0.0
