@@ -4,12 +4,12 @@
 \alias{make_dates}
 \title{Converts Variable to Date Type}
 \usage{
-make_dates(dt = NULL, lab = labels)
+make_dates(dt = NULL, dd = data_dict)
 }
 \arguments{
 \item{dt}{data table}
 
-\item{lab}{label file}
+\item{dd}{The data dictionary with variable types.}
 }
 \value{
 Variable conveted to an R date type

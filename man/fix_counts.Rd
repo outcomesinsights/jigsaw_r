@@ -4,12 +4,12 @@
 \alias{fix_counts}
 \title{Fix Counts to Make 0}
 \usage{
-fix_counts(dt = cohort, lab = labels)
+fix_counts(dt = cohort, dd = data_dict)
 }
 \arguments{
 \item{dt}{data table}
 
-\item{lab}{label file}
+\item{dd}{data dictionary file}
 }
 \value{
 Corrected counts that have 0 for NA.  Calls change_NA

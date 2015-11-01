@@ -4,10 +4,14 @@
 \alias{load_data}
 \title{Load Data from ZIP File}
 \usage{
-load_data(zipfile = NULL)
+load_data(zipfile = NULL, load_files = TRUE, save_dir = ".")
 }
 \arguments{
 \item{zipfile}{The path to the ZIP file to load as a character string.}
+
+\item{load_files}{Should the files be loaded to the global environment?  Defaults to TRUE.}
+
+\item{save_dir}{The path to the directory where the file should be saved.  Defaults to working directory.}
 }
 \value{
 Returns a list of the filenames for later loading.

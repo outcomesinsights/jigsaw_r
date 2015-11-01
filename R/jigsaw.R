@@ -2,31 +2,58 @@
 #'
 #' This function takes a zipfile, identifies all files in the zipfile, and unzips them all into a temp file.
 #' @param zipfile The path to the ZIP file to load as a character string.
+#' @param load_files Should the files be loaded to the global environment?  Defaults to TRUE.
+#' @param save_dir The path to the directory where the file should be saved.  Defaults to working directory.
 #'
 #' @return  Returns a list of the filenames for later loading.
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-load_data <- function(zipfile = NULL) {
-    temp <- tempfile()
-    files <- unzip(zipfile, list = TRUE)[,1]
-    unzippedfiles <- lapply(files, function(x) unzip(zipfile, x, overwrite = TRUE, exdir = temp))
-    unzippedfiles <- unlist(unzippedfiles)
-}
-
-#' Fix Variable Types
-#'
-#' Convert label types to those in R.  note that fread can't read in dates and will use character instead
-#'
-#' @param lab File with variable types and names
-#'
-#' @return Corrected label file for variable types
-#' @examples
-#' \dontrun{# nothing here yet}
-#' @export
-fix_label_types <- function(lab = labels){
-    lab[, data_type := gsub("date", "Date", data_type)]
-    lab[, data_type := gsub("string", "character", data_type)]
+load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
+    unzippedfiles <-
+        unzip(
+            zipfile,
+            overwrite = TRUE,
+            exdir = tempdir())
+    metadata <-
+        jsonlite::fromJSON(
+            grep("dataset_metadata.json", unzippedfiles, value = TRUE))
+    data_dict <-
+        data.table::fread(
+            grep(
+                "dataset_labels.csv",
+                unzippedfiles,
+                value = TRUE),
+            verbose = TRUE)
+    data_dict$data_type <- gsub("date", "Date", data_dict$data_type)
+    data_dict$data_type <- gsub("string", "character", data_dict$data_type)
+    cohort <-
+        data.table::fread(
+            grep(
+                "dataset.csv",
+                unzippedfiles,
+                value = TRUE),
+            colClasses = as.vector(data_dict$data_type),
+            verbose = TRUE)
+    cohort <- make_dates(cohort, data_dict)
+    events <-
+        data.table::fread(
+            grep("events.csv", unzippedfiles, value = TRUE),
+            colClasses = list(
+                character = c("criterion_type", "value_as_string", "units_source_value", "event_name"),
+                numeric = "value_as_number"),
+            verbose = TRUE) %>%
+        make_dates()
+    if(load_files){
+        events <<- events
+        cohort <<- cohort
+        data_dict <<- data_dict
+        metadata <<- metadata
+    } else {
+        save(
+            list = c("events", "cohort", "data_dict", "metadata"),
+            file = save_dir)
+    }
 }
 
 #' Converts Variable to Date Type
@@ -34,18 +61,18 @@ fix_label_types <- function(lab = labels){
 #' converts all date columns to date format (in place via data.table).  using data.table IDate class -- much faster
 #'
 #' @param dt data table
-#' @param lab label file
+#' @param dd The data dictionary with variable types.
 #'
 #' @return Variable conveted to an R date type
-#'
+#' @import data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-make_dates <- function(dt = NULL, lab = labels){
+make_dates <- function(dt = NULL, dd = data_dict){
     if (names(dt)[length(names(dt))] == "event_name") {
         datecols <- grep("date$", names(dt), ignore.case = TRUE)
     } else {
-        datecols <- grep("Date", lab$data_type) # col numbers for dates
+        datecols <- dd[, grep("Date", data_type)] # col numbers for dates
     }
     dt[, (datecols) := lapply(.SD, as.IDate, format = "%Y-%m-%d"), .SDcols = datecols]
 }
@@ -69,23 +96,23 @@ change_NA <- function(original, new = 0){
 #' Fix Counts to Make 0
 #'
 #' @param dt data table
-#' @param lab label file
+#' @param dd data dictionary file
 #'
 #' @return Corrected counts that have 0 for NA.  Calls change_NA
-#'
+#' @import data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-fix_counts  <- function(dt = cohort, lab = labels){
+fix_counts  <- function(dt = cohort, dd = data_dict){
     # replaces NA values in integer (count) variables to make them 0
-    countcols <- grep("integer", lab$data_type) # col numbers for counts (integer columns)
+    countcols <- grep("integer", dd$data_type) # col numbers for counts (integer columns)
     dt[, (countcols) := lapply(.SD, change_NA), .SDcols = countcols] # changes all NA to 0
 }
 
 
 #' Apply Function to Numeric Variable in Time Window
 #'
-#' takes lab (or any numeric) data in events file and estimates function using all available values in the window
+#' takes laboratory (or any numeric) data in events file and estimates function using all available values in the window
 #' before the person's index date (from cohort file).  Windows must be negative (i.e., before index date).  Function
 #' parameters can be passed in ... to the function (e.g., na.rm = TRUE).  Default function is mean
 
@@ -96,6 +123,7 @@ fix_counts  <- function(dt = cohort, lab = labels){
 #'
 #' @return see above
 #' @import  magrittr
+#' @import  data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -122,7 +150,7 @@ add_function_value <- function(varname = NULL, days = -365, func = mean, ...){
 #' @param unit_type limit to specific unit type (e.g., mmol/L)
 #'
 #' @return see above
-#'
+#' @import data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -150,6 +178,7 @@ clean_numeric_event <- function(event_group = "", lower_cut = -Inf, upper_cut = 
 #'
 #' @return see above
 #' @import  magrittr
+#' @import  data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export

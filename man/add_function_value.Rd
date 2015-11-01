@@ -19,7 +19,7 @@ add_function_value(varname = NULL, days = -365, func = mean, ...)
 see above
 }
 \description{
-takes lab (or any numeric) data in events file and estimates function using all available values in the window
+takes laboratory (or any numeric) data in events file and estimates function using all available values in the window
 before the person's index date (from cohort file).  Windows must be negative (i.e., before index date).  Function
 parameters can be passed in ... to the function (e.g., na.rm = TRUE).  Default function is mean
 }
