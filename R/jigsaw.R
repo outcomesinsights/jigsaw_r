@@ -10,14 +10,17 @@
 #' \dontrun{# nothing here yet}
 #' @export
 load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
+    message(paste0("Unzipping files from ", zipfile))
     unzippedfiles <-
         unzip(
             zipfile,
             overwrite = TRUE,
             exdir = tempdir())
+    message("Files unzipped to temporary directory.")
     metadata <-
         jsonlite::fromJSON(
             grep("dataset_metadata.json", unzippedfiles, value = TRUE))
+    message("Metadata file is created.")
     data_dict <-
         data.table::fread(
             grep(
@@ -27,6 +30,7 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
             verbose = TRUE)
     data_dict$data_type <- gsub("date", "Date", data_dict$data_type)
     data_dict$data_type <- gsub("string", "character", data_dict$data_type)
+    message("Data dictionary file is created.")
     cohort <-
         data.table::fread(
             grep(
@@ -35,15 +39,19 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
                 value = TRUE),
             colClasses = as.vector(data_dict$data_type),
             verbose = TRUE)
+    message("Cohort file is created. Converting dates to IDate class.")
     cohort <- make_dates(cohort, data_dict)
+    message("Cohort file date conversion finished.")
     events <-
         data.table::fread(
             grep("events.csv", unzippedfiles, value = TRUE),
             colClasses = list(
                 character = c("criterion_type", "value_as_string", "units_source_value", "event_name"),
                 numeric = "value_as_number"),
-            verbose = TRUE) %>%
-        make_dates()
+            verbose = TRUE)
+    message("Events file is created. Converting dates to IDate class.")
+    events <- make_dates(events, data_dict)
+    message("Events file date conversion finished.")
     if(load_files){
         events <<- events
         cohort <<- cohort
@@ -53,7 +61,9 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
         save(
             list = c("events", "cohort", "data_dict", "metadata"),
             file = save_dir)
+        message(paste0("Files saved to ", save_dir))
     }
+    message("Finished load process.")
 }
 
 #' Converts Variable to Date Type
@@ -110,11 +120,12 @@ fix_counts  <- function(dt = cohort, dd = data_dict){
 }
 
 
-#' Apply Function to Numeric Variable in Time Window
+#' Add Event to Cohort Using Function of Numeric Variable in Time Window
 #'
-#' takes laboratory (or any numeric) data in events file and estimates function using all available values in the window
-#' before the person's index date (from cohort file).  Windows must be negative (i.e., before index date).  Function
-#' parameters can be passed in ... to the function (e.g., na.rm = TRUE).  Default function is mean
+#' Takes any numeric data in events file (e.g., laboratory value) and estimates a function of it (e.g., mean)
+#' using all available values.  Values can be limited to a window before the person's index date (from cohort file).
+#' Windows must be negative (i.e., before index date).  Function parameters can be passed in ... to the function
+#' (e.g., na.rm = TRUE).  Default function is mean.  Other options include median, max, and min.
 
 #' @param varname variable name
 #' @param days size of window in days
@@ -127,7 +138,7 @@ fix_counts  <- function(dt = cohort, dd = data_dict){
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-add_function_value <- function(varname = NULL, days = -365, func = mean, ...){
+add_numerical_event <- function(varname = NULL, days = -365, func = mean, ...){
     setkey(cohort, person_id)
     earliest_date <- cohort[, .(person_id, check_date = index_date + days)] %>% setkey(., person_id)
     dt <- events[event_name == varname, .(person_id, start_date, value = value_as_number)] %>%
@@ -182,7 +193,7 @@ clean_numeric_event <- function(event_group = "", lower_cut = -Inf, upper_cut = 
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-add_categorical_value <- function(varname = NULL, check_value = NULL, days = -365){
+add_categorical_event <- function(varname = NULL, check_value = NULL, days = -365){
     setkey(cohort, person_id)
     earliest_date <- cohort[, .(person_id, check_date = index_date + days)] %>%
         setkey(., person_id)
