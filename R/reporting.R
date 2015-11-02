@@ -51,7 +51,9 @@ fmt <- function(x, digits = 2) {
 #' @param header Header text for the table
 #'
 #' @return Returns a FlexTable object from the ReporteRs package.  To add this to a document, use the addtodoc() function
-#'
+#' @import ReporteRs
+#' @import ReporteRsjars
+#' @import rJava
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -79,7 +81,9 @@ wordtable <- function(df, footer = NULL, header = NULL){
 #' @param pagebreak Should there be a pagebreak added (default is TRUE)
 #'
 #' @return Adds object to document
-#'
+#' @import ReporteRs
+#' @import ReporteRsjars
+#' @import rJava
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -137,8 +141,9 @@ glancenames <- function(df) {
 #' @param levsymbol level symbol
 #' @param ... future?
 #'
-#' @return
-#'
+#' @return Single row for summary table
+#' @import  magrittr
+#' @import  data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -153,11 +158,11 @@ glancenames <- function(df) {
     label <- ifelse(is.null(label), variable, label)
     check <- .find_class(dt, variable)
     if(check$type == "cont") { # continuous
-        make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fmean, f2 = fsd, f3 = ftot)
+        .make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fmean, f2 = fsd, f3 = ftot)
     } else if(check$type == "2level") { # 2 level variable reported as one row using 0,1 (needs to handle char, other integer ranges, and numeric)
-        make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fpct, f2 = fnum, f3 = ftot)
+        .make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fpct, f2 = fnum, f3 = ftot)
     } else if(check$type == "2factor") { # 2 level factor reported as one row using 0,1
-        make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fpct_f, f2 = fnum_f, f3 = ftot)
+        .make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fpct_f, f2 = fnum_f, f3 = ftot)
     } else if(check$type == "factor") { # factor - may want to coerce everything categorical to factor and use this
         l <- length(levels(dt[[variable]]))
         varname <- c(label, rep("", (l - 1)))
@@ -170,9 +175,18 @@ glancenames <- function(df) {
                 setnames(., 1:4, c("varname", "levels", "col2", "col3")) %>%
                 .[, col1 := (col2 / col3)] %>%
                 setcolorder(., c(1, 2, 5, 3, 4))
-        q$col1 <- q$col1 %>% round(2) %>% format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 2)
-        q$col2 <- q$col2 %>% round(0) %>% format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 0)
-        q$col3 <- q$col3 %>% round(0) %>% format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 0)
+        q$col1 <-
+            q$col1 %>%
+            round(2) %>%
+            format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 2)
+        q$col2 <-
+            q$col2 %>%
+            round(0) %>%
+            format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 0)
+        q$col3 <-
+            q$col3 %>%
+            round(0) %>%
+            format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 0)
         return(q)
     } else
         stop("can't handle this data type yet")
@@ -187,8 +201,9 @@ glancenames <- function(df) {
 #' @param f2 function 2
 #' @param f3 function 3
 #' @param ... for future?
-#'
 #' @return tbd
+#' @import  magrittr
+#' @import  data.table
 #' @examples
 #' \dontrun{# nothing here yet}#'
 #' @export
@@ -206,8 +221,8 @@ glancenames <- function(df) {
 #' @param dt data table
 #' @param variable variable
 #'
-#' @return
-#'
+#' @return Type of data
+#' @import  data.table
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -225,8 +240,9 @@ glancenames <- function(df) {
 
 #' Make "Table 1" to Summarize Variables in Data Frame
 #'
-#' @param varlist List of variables to summarize
-#' @param dt Data table with variables of interest
+#' @param varlist Data frame containing 2 columns.  Column 1 is the names of the variables.
+#' Column 2 is a name to be used as the variable name (typically longer than the variable name).
+#' @param dt Data table with variables of interest in it.
 #'
 #' @return
 #'
@@ -238,7 +254,7 @@ make_table1 <- function(varlist, dt){
     for(i in seq_along(varlist[, 1])) {
         output[[i]] <- .table_row(dt, varlist[i, 1], varlist[i, 2])
     }
-    return(rbindlist(output))
+    return(data.table::rbindlist(output))
 }
 
 # test data set for table 1 functions:
