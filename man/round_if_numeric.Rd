@@ -7,9 +7,9 @@
 round_if_numeric(x, n = 3)
 }
 \arguments{
-\item{n}{Number of digits for rounding (default =)}
+\item{x}{Vector to round}
 
-\item{df}{Vector to round}
+\item{n}{Number of digits for rounding (default =)}
 }
 \value{
 Vector with  numeric variable rounded

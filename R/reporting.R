@@ -1,6 +1,6 @@
 #' Round Numeric Variable
 #'
-#' @param df Vector to round
+#' @param x Vector to round
 #' @param n Number of digits for rounding (default =)
 #'
 #' @return Vector with  numeric variable rounded
@@ -34,7 +34,7 @@ round_df <- function(df, n = 3) {
 #' @param x vector
 #' @param digits digits to round
 #'
-#' @return
+#' @return The original numeric vector rounded, formatted and converted to character.
 #'
 #' @examples
 #' \dontrun{# nothing here yet}
@@ -43,6 +43,32 @@ fmt <- function(x, digits = 2) {
     # rounds and/or uses 1,000 separator.
     round(x, digits) %>% format(x, big.mark = ",", format = "f", scientific = FALSE, nsmall = digits)
 }
+
+#' Make Word File Using Template
+#'
+#' This simply uses the docx() function in ReporterRs package with the template file embedded
+#' within this package.  An external template file can also be used.
+#'
+#' @param template_file File path to a .docx file that will be used as template.  Default is
+#' to use the included template file.
+#'
+#' @return Returns a document that can be used with ReporteRs package
+#' @examples
+#' \dontrun{# nothing here yet}
+#' @export
+create_word_doc <- function(template_file = NULL){
+    if(is.NULL(template)){
+        t <- paste0(system.file("extdata", package = "jigsaw"), "template.docx")
+        docx(template = t)
+    } else {
+        if(file.exists(template_file)){
+            docx(template = template_file)
+        } else {
+            stop("The template_file does not seem to exist.  Please check it.")
+        }
+    }
+}
+
 
 #' Create a Table in Word
 #'
@@ -130,7 +156,7 @@ glancenames <- function(df) {
 #' Make a Single Table Row (internal)
 #'
 #' uses fmt for digits to report, and find_class to identify type of data and choose formatting.
-#' creates a single row for a table.  need to use rbind and then setnames to name columns
+#' creates a single row for a table based on a single variable.  need to use rbind and then setnames to name columns
 #' need to add function to handle factors and/or report multiple rows per variable
 #' factor uses upper level (of two level factor) as numerator (e.g., levels = c("m", "f") uses f)
 
@@ -148,21 +174,51 @@ glancenames <- function(df) {
 #' \dontrun{# nothing here yet}
 #' @export
 .table_row <- function(dt, variable, label = NULL, digits = 2, levsymbol = "", ...){
-    fmean <- function(x) mean(x, na.rm = TRUE) %>% fmt(digits)
-    fsd   <- function(x) sqrt(var(x, na.rm = TRUE)) %>% fmt(digits)
-    fpct  <- function(x) (sum(x, na.rm = TRUE) / sum(!is.na(x))) %>% fmt(digits)
-    fnum  <- function(x) sum(x, na.rm = TRUE) %>% fmt(0)
-    fpct_f  <- function(x) (sum(x == levels(x)[[2]], na.rm = TRUE) / sum(!is.na(x))) %>% fmt(digits)
-    fnum_f  <- function(x) sum(x == levels(x)[[2]], na.rm = TRUE) %>% fmt(0)
-    ftot  <- function(x) sum(!is.na(x)) %>% fmt(0)
+    fmean <- function(x) mean(x, na.rm = TRUE) %>%
+        fmt(digits)
+    fsd   <- function(x) sqrt(var(x, na.rm = TRUE)) %>%
+        fmt(digits)
+    fpct  <- function(x) (sum(x, na.rm = TRUE) / sum(!is.na(x))) %>%
+        fmt(digits)
+    fnum  <- function(x) sum(x, na.rm = TRUE) %>%
+        fmt(0)
+    fpct_f  <- function(x) (sum(x == levels(x)[[2]], na.rm = TRUE) / sum(!is.na(x))) %>%
+        fmt(digits)
+    fnum_f  <- function(x) sum(x == levels(x)[[2]], na.rm = TRUE) %>%
+        fmt(0)
+    ftot  <- function(x) sum(!is.na(x)) %>%
+        fmt(0)
     label <- ifelse(is.null(label), variable, label)
     check <- .find_class(dt, variable)
     if(check$type == "cont") { # continuous
-        .make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fmean, f2 = fsd, f3 = ftot)
+        .make_5cols(
+            dt = dt,
+            variable = variable,
+            label = label,
+            levsymbol = levsymbol,
+            digits = digits,
+            f1 = fmean,
+            f2 = fsd,
+            f3 = ftot)
     } else if(check$type == "2level") { # 2 level variable reported as one row using 0,1 (needs to handle char, other integer ranges, and numeric)
-        .make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fpct, f2 = fnum, f3 = ftot)
+        .make_5cols(
+            dt = dt,
+            variable = variable,
+            label = label,
+            levsymbol = levsymbol,
+            digits = digits,
+            f1 = fpct,
+            f2 = fnum,
+            f3 = ftot)
     } else if(check$type == "2factor") { # 2 level factor reported as one row using 0,1
-        .make_5cols(dt = dt, variable = variable, label = label, levsymbol = levsymbol, digits = digits, f1 = fpct_f, f2 = fnum_f, f3 = ftot)
+        .make_5cols(dt = dt,
+                    variable = variable,
+                    label = label,
+                    levsymbol = levsymbol,
+                    digits = digits,
+                    f1 = fpct_f,
+                    f2 = fnum_f,
+                    f3 = ftot)
     } else if(check$type == "factor") { # factor - may want to coerce everything categorical to factor and use this
         l <- length(levels(dt[[variable]]))
         varname <- c(label, rep("", (l - 1)))
@@ -211,9 +267,12 @@ glancenames <- function(df) {
     data.table(
         varname = label,
         levels = levsymbol,
-        col1 = dt[, lapply(.SD, f1), .SDcols = variable] %>% unlist,
-        col2 = dt[, lapply(.SD, f2), .SDcols = variable] %>% unlist,
-        col3 = dt[, lapply(.SD, f3), .SDcols = variable] %>% unlist)
+        col1 = dt[, lapply(.SD, f1), .SDcols = variable] %>%
+            unlist(),
+        col2 = dt[, lapply(.SD, f2), .SDcols = variable] %>%
+            unlist(),
+        col3 = dt[, lapply(.SD, f3), .SDcols = variable] %>%
+            unlist())
 }
 
 #' Determine Data Type and/or Class
@@ -229,12 +288,36 @@ glancenames <- function(df) {
 .find_class <- function(dt, variable){
     cl <- class(dt[, get(variable)])
     un <- dt[!is.na(get(variable)), length(unique(get(variable)))]
-    d <- data.table(class = cl, unique_levels = un, type = "other")
-    d[, type := ifelse(class %in% c("numeric", "integer", "difftime") & unique_levels > 2, "cont", type)]
-    d[, type := ifelse(class %in% c("integer", "numeric") & unique_levels <= 2, "2level", type)]
-    d[, type := ifelse(class == "logical", "2level", type)]
-    d[, type := ifelse(class == "factor" & unique_levels == 2, "2factor", type)]
-    d[, type := ifelse(class == "factor" & unique_levels > 2, "factor", type)]
+    d <-
+        data.table(
+            class = cl,
+            unique_levels = un,
+            type = "other")
+    d[,
+      type := ifelse(
+        class %in% c("numeric", "integer", "difftime") & unique_levels > 2,
+        "cont",
+        type)]
+    d[,
+      type := ifelse(
+          class %in% c("integer", "numeric") & unique_levels <= 2,
+          "2level",
+          type)]
+    d[,
+      type := ifelse(
+          class == "logical",
+          "2level",
+          type)]
+    d[,
+      type := ifelse(
+          class == "factor" & unique_levels == 2,
+          "2factor",
+          type)]
+    d[,
+      type := ifelse(
+          class == "factor" & unique_levels > 2,
+          "factor",
+          type)]
     return(d)
 }
 
