@@ -7,15 +7,18 @@
 make_dates(dt = NULL, dd = data_dict)
 }
 \arguments{
-\item{dt}{data table}
+\item{dt}{The data table in which to convert date columns}
 
-\item{dd}{The data dictionary with variable types.}
+\item{dd}{The data dictionary with variable types to identify date columns}
 }
 \value{
-Variable conveted to an R date type
+Variable(s) converted to an R date class
 }
 \description{
-converts all date columns to date format (in place via data.table).  using data.table IDate class -- much faster
+Converts all date columns to date format (in place via data.table).  Uses the data.table IDate class
+which his much faster than the base as.Date() function.  IDate is still recognized as an R
+date class.  Note that this function needs to be improved to take advantage of
+attributes or classes.  This is intended to run as part of load_data().
 }
 \examples{
 \dontrun{# nothing here yet}

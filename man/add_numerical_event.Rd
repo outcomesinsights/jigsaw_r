@@ -20,7 +20,7 @@ see above
 }
 \description{
 Takes any numeric data in events file (e.g., laboratory value) and estimates a function of it (e.g., mean)
-using all available values.  Values can be limited to a window before the person's index date (from cohort file).
+using all available values.  Values can be limited to a time window before the person's index date (from cohort file).
 Windows must be negative (i.e., before index date).  Function parameters can be passed in ... to the function
 (e.g., na.rm = TRUE).  Default function is mean.  Other options include median, max, and min.
 }

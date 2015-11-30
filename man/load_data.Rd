@@ -17,7 +17,12 @@ load_data(zipfile = NULL, load_files = TRUE, save_dir = ".")
 Returns a list of the filenames for later loading.
 }
 \description{
-This function takes a zipfile, identifies all files in the zipfile, and unzips them all into a temp file.
+This function takes a zipfile from Jigsaw, identifies all files in the zipfile, and unzips them all into a temp file.
+Then it cleans the data by fixing dates to be an R date class (using the data.table IDate class for speed).  Finally,
+it gives the option of loading all of the files into the global environment, or saving them all as RDS files
+to a user-specified directory.  This function provides status updates at each step using the
+R message function.  File reading is done using the data.table fread() function which is
+set to "verbose" output to help the user identify problems.
 }
 \examples{
 \dontrun{# nothing here yet}

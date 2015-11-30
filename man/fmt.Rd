@@ -12,7 +12,7 @@ fmt(x, digits = 2)
 \item{digits}{digits to round}
 }
 \value{
-
+The original numeric vector rounded, formatted and converted to character.
 }
 \description{
 Format Numeric Value as Character

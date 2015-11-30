@@ -20,8 +20,9 @@ clean_numeric_event(event_group = "", lower_cut = -Inf, upper_cut = Inf,
 see above
 }
 \description{
-takes an event type and makes all values <= lower cut or >= upper cut "NA".  Also limits to specific unit type (which can be a character vector of types)
-note -- need to add function to deduplicate by day and allow user to over-ride
+Takes a numeric event type and makes all values <= lower cut or >= upper cut equal to "NA".  Also can
+limit results to those with a specific unit type (which can be a character vector of multiple types)
+Note -- need to add function to deduplicate by day and allow user to over-ride
 }
 \examples{
 \dontrun{# nothing here yet}

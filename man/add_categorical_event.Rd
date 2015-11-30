@@ -7,18 +7,21 @@
 add_categorical_event(varname = NULL, check_value = NULL, days = -365)
 }
 \arguments{
-\item{varname}{variable name}
+\item{varname}{event name to check for values}
 
-\item{check_value}{???}
+\item{check_value}{The character value or  vector to compare against (e.g. c("yes", "maybe"))}
 
-\item{days}{size of window in days}
+\item{days}{Size of window before the index date (from cohort file) in days}
 }
 \value{
 see above
 }
 \description{
-takes categorical (string) data in events file and classifies person based on all available values in the window
-before the person's index date (from cohort file).  Windows must be negative (i.e., before index date).  NA = FALSE
+Takes a categorical (string) variable in the events file and classifies a person based on all
+available values in a window of time before the person's index date (from cohort file).
+Windows must be negative (i.e., before index date).  This is useful for identifying whether
+a value has occurred in a window of time.  For example, was the person classified as a
+smoker during the last 3 years?
 }
 \examples{
 \dontrun{# nothing here yet}

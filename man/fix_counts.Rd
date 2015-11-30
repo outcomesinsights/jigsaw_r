@@ -15,7 +15,9 @@ fix_counts(dt = cohort, dd = data_dict)
 Corrected counts that have 0 for NA.  Calls change_NA
 }
 \description{
-Fix Counts to Make 0
+This function is designed to take a variable that reports NA for a count of 0 and replace
+the NA with 0.  This occurs when Jigsaw finds no event (e.g., no hospitalization).  There
+is now a flag variable reported in Jigsaw that indicates this explicitly.
 }
 \examples{
 \dontrun{# nothing here yet}
