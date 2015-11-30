@@ -1,18 +1,19 @@
-Package: jigsaw
+Package: jigsaw.r
 Type: Package
 Title: Tools for Working With Observational Data
 Version: 0.1
 Date: 2015-10-29
 Author: Mark Danese
 Maintainer: Mark Danese <mark@outins.com>
-Description: This package has tools for working with observational data sets generated with Jigsaw
-License: TBD
+Description: This package has tools for working with observational data sets
+    generated with Jigsaw
+License: MIT
 LazyData: TRUE
-Imports: 
+Imports:
     data.table,
     jsonlite,
     magrittr,
     ReporteRs,
     ReporteRsjars,
     rJava
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1
