@@ -40,8 +40,14 @@ round_df <- function(df, n = 3) {
 #' \dontrun{# nothing here yet}
 #' @export
 fmt <- function(x, digits = 2) {
-    # rounds and/or uses 1,000 separator.
-    round(x, digits) %>% format(x, big.mark = ",", format = "f", scientific = FALSE, nsmall = digits)
+    if(all(is.na(x))){
+        return(NA_real_)
+    } else {
+    y <-
+        round(x, digits) %>%
+        format(x, big.mark = ",", format = "f", scientific = FALSE, nsmall = digits)
+    return(y)
+    }
 }
 
 #' Make Word File Using Template
@@ -57,16 +63,14 @@ fmt <- function(x, digits = 2) {
 #' \dontrun{# nothing here yet}
 #' @export
 create_word_doc <- function(template_file = NULL){
-    if(is.NULL(template)){
-        t <- paste0(system.file("extdata", package = "jigsaw"), "template.docx")
-        docx(template = t)
+    if(is.null(template_file)){
+        template_file <- paste0(system.file("extdata", package = "jigsaw"), "/template.docx") # normalize path for windows
     } else {
-        if(file.exists(template_file)){
-            docx(template = template_file)
-        } else {
+        if(!file.exists(template_file)){
             stop("The template_file does not seem to exist.  Please check it.")
         }
     }
+    ReporteRs::docx(template = template_file)
 }
 
 
@@ -173,7 +177,7 @@ glancenames <- function(df) {
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-.table_row <- function(dt, variable, label = NULL, digits = 2, levsymbol = "", ...){
+.table_row <- function(dt, variable, label = NULL, digits, levsymbol = "", ...){
     fmean <- function(x) mean(x, na.rm = TRUE) %>%
         fmt(digits)
     fsd   <- function(x) sqrt(var(x, na.rm = TRUE)) %>%
@@ -190,7 +194,14 @@ glancenames <- function(df) {
         fmt(0)
     label <- ifelse(is.null(label), variable, label)
     check <- .find_class(dt, variable)
-    if(check$type == "cont") { # continuous
+    if(check$type == "empty") { # all NA -- no values
+        data.table(
+            varname = label,
+            levels = levsymbol,
+            col1 = NA,
+            col2 = NA,
+            col3 = NA)
+    } else if(check$type == "cont") { # continuous
         .make_5cols(
             dt = dt,
             variable = variable,
@@ -305,8 +316,13 @@ glancenames <- function(df) {
           type)]
     d[,
       type := ifelse(
-          class == "logical",
+          class == "logical" & unique_levels %in% 1:2,
           "2level",
+          type)]
+    d[,
+      type := ifelse(
+          unique_levels == 0,
+          "empty",
           type)]
     d[,
       type := ifelse(
@@ -326,16 +342,17 @@ glancenames <- function(df) {
 #' @param varlist Data frame containing 2 columns.  Column 1 is the names of the variables.
 #' Column 2 is a name to be used as the variable name (typically longer than the variable name).
 #' @param dt Data table with variables of interest in it.
+#' @param digits Number of digits for continuous variables
 #'
 #' @return
 #'
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-make_table1 <- function(varlist, dt){
+make_table1 <- function(varlist, dt, digits = 2){
     output <- vector("list", nrow(varlist))
     for(i in seq_along(varlist[, 1])) {
-        output[[i]] <- .table_row(dt, varlist[i, 1], varlist[i, 2])
+        output[[i]] <- .table_row(dt, varlist[i, 1], varlist[i, 2], digits = digits)
     }
     return(data.table::rbindlist(output))
 }
