@@ -1,6 +1,12 @@
 #' Load Data from ZIP File
 #'
-#' This function takes a zipfile, identifies all files in the zipfile, and unzips them all into a temp file.
+#' This function takes a zipfile from Jigsaw, identifies all files in the zipfile, and unzips them all into a temp file.
+#' Then it cleans the data by fixing dates to be an R date class (using the data.table IDate class for speed).  Finally,
+#' it gives the option of loading all of the files into the global environment, or saving them all as RDS files
+#' to a user-specified directory.  This function provides status updates at each step using the
+#' R message function.  File reading is done using the data.table fread() function which is
+#' set to "verbose" output to help the user identify problems.
+#'
 #' @param zipfile The path to the ZIP file to load as a character string.
 #' @param load_files Should the files be loaded to the global environment?  Defaults to TRUE.
 #' @param save_dir The path to the directory where the file should be saved.  Defaults to working directory.
@@ -30,6 +36,7 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
             verbose = TRUE)
     data_dict$data_type <- gsub("date", "Date", data_dict$data_type)
     data_dict$data_type <- gsub("string", "character", data_dict$data_type)
+    data_dict$data_type <- gsub("boolean", "integer", data_dict$data_type)
     message("Data dictionary file is created.")
     cohort <-
         data.table::fread(
@@ -68,12 +75,15 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
 
 #' Converts Variable to Date Type
 #'
-#' converts all date columns to date format (in place via data.table).  using data.table IDate class -- much faster
+#' Converts all date columns to date format (in place via data.table).  Uses the data.table IDate class
+#' which his much faster than the base as.Date() function.  IDate is still recognized as an R
+#' date class.  Note that this function needs to be improved to take advantage of
+#' attributes or classes.  This is intended to run as part of load_data().
 #'
-#' @param dt data table
-#' @param dd The data dictionary with variable types.
+#' @param dt The data table in which to convert date columns
+#' @param dd The data dictionary with variable types to identify date columns
 #'
-#' @return Variable conveted to an R date type
+#' @return Variable(s) converted to an R date class
 #' @import data.table
 #' @examples
 #' \dontrun{# nothing here yet}
@@ -105,6 +115,10 @@ change_NA <- function(original, new = 0){
 
 #' Fix Counts to Make 0
 #'
+#' This function is designed to take a variable that reports NA for a count of 0 and replace
+#' the NA with 0.  This occurs when Jigsaw finds no event (e.g., no hospitalization).  There
+#' is now a flag variable reported in Jigsaw that indicates this explicitly.
+#'
 #' @param dt data table
 #' @param dd data dictionary file
 #'
@@ -123,7 +137,7 @@ fix_counts  <- function(dt = cohort, dd = data_dict){
 #' Add Event to Cohort Using Function of Numeric Variable in Time Window
 #'
 #' Takes any numeric data in events file (e.g., laboratory value) and estimates a function of it (e.g., mean)
-#' using all available values.  Values can be limited to a window before the person's index date (from cohort file).
+#' using all available values.  Values can be limited to a time window before the person's index date (from cohort file).
 #' Windows must be negative (i.e., before index date).  Function parameters can be passed in ... to the function
 #' (e.g., na.rm = TRUE).  Default function is mean.  Other options include median, max, and min.
 
@@ -152,8 +166,9 @@ add_numerical_event <- function(varname = NULL, days = -365, func = mean, ...){
 
 #' Clean Numeric Event
 #'
-#' takes an event type and makes all values <= lower cut or >= upper cut "NA".  Also limits to specific unit type (which can be a character vector of types)
-#' note -- need to add function to deduplicate by day and allow user to over-ride
+#' Takes a numeric event type and makes all values <= lower cut or >= upper cut equal to "NA".  Also can
+#' limit results to those with a specific unit type (which can be a character vector of multiple types)
+#' Note -- need to add function to deduplicate by day and allow user to over-ride
 #'
 #' @param event_group event type to clean
 #' @param lower_cut value below which data will be considered NA (inclusive)
@@ -166,7 +181,7 @@ add_numerical_event <- function(varname = NULL, days = -365, func = mean, ...){
 #' \dontrun{# nothing here yet}
 #' @export
 clean_numeric_event <- function(event_group = "", lower_cut = -Inf, upper_cut = Inf, unit_type = NULL) {
-    if (!(event_group %in% events[, unique(event_name)])) stop(paste("there is no event name variable called", event_group))
+    if (!(event_group %in% events[, unique(event_name)])) stop(paste("There is no event name variable called", event_group))
     if (!(is.numeric(lower_cut))) stop(paste("lower_cut is not numeric:", lower_cut))
     if (!(is.numeric(upper_cut))) stop(paste("upper_cut is not numeric:", upper_cut))
     if (!(is.character(unit_type)) & !is.null(unit_type)) stop(paste("unit_type is not a character:", upper_cut))
@@ -180,12 +195,15 @@ clean_numeric_event <- function(event_group = "", lower_cut = -Inf, upper_cut = 
 
 #' Create Classification Variable Based On Window
 #'
-#' takes categorical (string) data in events file and classifies person based on all available values in the window
-#' before the person's index date (from cohort file).  Windows must be negative (i.e., before index date).  NA = FALSE
+#' Takes a categorical (string) variable in the events file and classifies a person based on all
+#' available values in a window of time before the person's index date (from cohort file).
+#' Windows must be negative (i.e., before index date).  This is useful for identifying whether
+#' a value has occurred in a window of time.  For example, was the person classified as a
+#' smoker during the last 3 years?
 
-#' @param varname variable name
-#' @param check_value ???
-#' @param days size of window in days
+#' @param varname event name to check for values
+#' @param check_value The character value or  vector to compare against (e.g. c("yes", "maybe"))
+#' @param days Size of window before the index date (from cohort file) in days
 #'
 #' @return see above
 #' @import  magrittr
