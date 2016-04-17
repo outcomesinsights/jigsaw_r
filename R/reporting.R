@@ -1,5 +1,7 @@
 #' Round Numeric Variable
 #'
+#' This was taken from this StackOverflow answer:  http://stackoverflow.com/questions/21328047/round-multiple-vectors-in-dataframe-with-plyr/21328269#21328269
+#'
 #' @param x Vector to round
 #' @param n Number of digits for rounding (default =)
 #'
@@ -14,6 +16,8 @@ round_if_numeric <- function(x, n = 3) {
 }
 
 #' Round All Numeric Columns in Data Frame
+#'
+#' This was taken from this StackOverflow answer:  http://stackoverflow.com/questions/21328047/round-multiple-vectors-in-dataframe-with-plyr/21328269#21328269
 #'
 #' @param df Data frame
 #' @param n Digits to round to (to right of decimal)
