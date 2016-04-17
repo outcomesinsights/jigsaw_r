@@ -1,7 +1,7 @@
-Package: jigsaw.r
+Package: jigsaw
 Type: Package
 Title: Tools for Working With Observational Data
-Version: 0.1
+Version: 0.11
 Date: 2015-10-29
 Author: Mark Danese
 Maintainer: Mark Danese <mark@outins.com>
