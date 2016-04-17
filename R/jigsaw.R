@@ -70,7 +70,8 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
             file = save_dir)
         message(paste0("Files saved to ", save_dir))
     }
-    message("Finished load process.")
+    message("Finished load process for the following:")
+    message("Study Title:\n", metadata$export$study$name)
 }
 
 #' Converts Variable to Date Type
@@ -99,7 +100,9 @@ make_dates <- function(dt = NULL, dd = data_dict){
 
 #' Replace NA Values
 #'
-#' replaces NA value with value in new (default = 0)
+#' replaces NA value with value in new (default = 0).
+#' For a different way to accomplish this:
+#' http://stackoverflow.com/questions/7235657/fastest-way-to-replace-nas-in-a-large-data-table#7249454
 #'
 #' @param original column from data table
 #' @param new replacement value (default = 0)
