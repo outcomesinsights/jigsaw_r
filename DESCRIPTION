@@ -1,4 +1,4 @@
-Package: jigsaw
+Package: jigsaw.r
 Type: Package
 Title: Tools for Working With Observational Data
 Version: 0.11
