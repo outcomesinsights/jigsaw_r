@@ -68,7 +68,7 @@ fmt <- function(x, digits = 2) {
 #' @export
 create_word_doc <- function(template_file = NULL){
     if(is.null(template_file)){
-        template_file <- paste0(system.file("extdata", package = "jigsaw"), "/template.docx") # normalize path for windows
+        template_file <- paste0(system.file("extdata", package = "jigsaw.r"), "/template.docx") # normalize path for windows
     } else {
         if(!file.exists(template_file)){
             stop("The template_file does not seem to exist.  Please check it.")
