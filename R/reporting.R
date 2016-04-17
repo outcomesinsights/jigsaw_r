@@ -348,7 +348,7 @@ glancenames <- function(df) {
 #' @param dt Data table with variables of interest in it.
 #' @param digits Number of digits for continuous variables
 #'
-#' @return
+#' @return Returns Table 1 as a data.table
 #'
 #' @examples
 #' \dontrun{# nothing here yet}

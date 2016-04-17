@@ -15,7 +15,7 @@ Column 2 is a name to be used as the variable name (typically longer than the va
 \item{digits}{Number of digits for continuous variables}
 }
 \value{
-
+Returns Table 1 as a data.table
 }
 \description{
 Make "Table 1" to Summarize Variables in Data Frame

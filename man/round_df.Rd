@@ -15,7 +15,7 @@ round_df(df, n = 3)
 Data frame
 }
 \description{
-Round All Numeric Columns in Data Frame
+This was taken from this StackOverflow answer:  http://stackoverflow.com/questions/21328047/round-multiple-vectors-in-dataframe-with-plyr/21328269#21328269
 }
 \examples{
 \dontrun{# nothing here yet}

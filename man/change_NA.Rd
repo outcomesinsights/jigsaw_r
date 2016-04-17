@@ -15,7 +15,9 @@ change_NA(original, new = 0)
 Vector with NA replaced
 }
 \description{
-replaces NA value with value in new (default = 0)
+replaces NA value with value in new (default = 0).
+For a different way to accomplish this:
+http://stackoverflow.com/questions/7235657/fastest-way-to-replace-nas-in-a-large-data-table#7249454
 }
 \examples{
 \dontrun{# nothing here yet}
