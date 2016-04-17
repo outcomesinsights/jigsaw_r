@@ -70,8 +70,8 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
             file = save_dir)
         message(paste0("Files saved to ", save_dir))
     }
-    message("Finished load process for the following:")
-    message("Study Title:\n", metadata$export$study$name)
+    message("Finished loading data for the following study:")
+    message(metadata$export$study$name)
 }
 
 #' Converts Variable to Date Type
