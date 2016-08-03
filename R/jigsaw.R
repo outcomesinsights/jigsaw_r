@@ -10,12 +10,13 @@
 #' @param zipfile The path to the ZIP file to load as a character string.
 #' @param load_files Should the files be loaded to the global environment?  Defaults to TRUE.
 #' @param save_dir The path to the directory where the file should be saved.  Defaults to working directory.
+#' @param ver The version of the export being used. 1L is original.  2L is updated.
 #'
 #' @return  Returns a list of the filenames for later loading.
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
+load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".", ver = 1L) {
     message(paste0("Unzipping files from ", zipfile))
     unzippedfiles <-
         unzip(
@@ -49,11 +50,16 @@ load_data <- function(zipfile = NULL, load_files = TRUE, save_dir = ".") {
     message("Cohort file is created. Converting dates to IDate class.")
     cohort <- make_dates(cohort, data_dict)
     message("Cohort file date conversion finished.")
+    if(ver == 2) {
+        char_list <- c("criterion_domain", "value_as_string", "units_source_value", "source_value", "event_name")
+    } else {
+        char_list <- c("criterion_type", "value_as_string", "units_source_value", "event_name")
+    }
     events <-
         data.table::fread(
             grep("events.csv", unzippedfiles, value = TRUE),
             colClasses = list(
-                character = c("criterion_type", "value_as_string", "units_source_value", "event_name"),
+                character = char_list,
                 numeric = "value_as_number"),
             verbose = TRUE)
     message("Events file is created. Converting dates to IDate class.")
