@@ -181,16 +181,16 @@ glancenames <- function(df) {
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-.table_row <- function(dt, variable, label = NULL, digits, levsymbol = "", ...){
+.table_row <- function(dt, variable, label = NULL, scaling = 100, digits, levsymbol = "", ...){
     fmean <- function(x) mean(x, na.rm = TRUE) %>%
         fmt(digits)
     fsd   <- function(x) sqrt(var(x, na.rm = TRUE)) %>%
         fmt(digits)
-    fpct  <- function(x) (sum(x, na.rm = TRUE) / sum(!is.na(x))) %>%
+    fpct  <- function(x) (scaling * sum(x, na.rm = TRUE) / sum(!is.na(x))) %>%
         fmt(digits)
     fnum  <- function(x) sum(x, na.rm = TRUE) %>%
         fmt(0)
-    fpct_f  <- function(x) (sum(x == levels(x)[[2]], na.rm = TRUE) / sum(!is.na(x))) %>%
+    fpct_f  <- function(x) (scaling * sum(x == levels(x)[[2]], na.rm = TRUE) / sum(!is.na(x))) %>%
         fmt(digits)
     fnum_f  <- function(x) sum(x == levels(x)[[2]], na.rm = TRUE) %>%
         fmt(0)
