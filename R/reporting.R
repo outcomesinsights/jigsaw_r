@@ -188,12 +188,12 @@ glancenames <- function(df) {
         fmt(digits)
     fpct  <- function(x) (scaling * sum(x, na.rm = TRUE) / sum(!is.na(x))) %>%
         fmt(digits) %>%
-        if(scaling == 100) {paste0(., "%")}
+        paste0(., "%")
     fnum  <- function(x) sum(x, na.rm = TRUE) %>%
         fmt(0)
     fpct_f  <- function(x) (scaling * sum(x == levels(x)[[2]], na.rm = TRUE) / sum(!is.na(x))) %>%
         fmt(digits)  %>%
-        if(scaling == 100) {paste0(., "%")}
+        paste0(., "%")
     fnum_f  <- function(x) sum(x == levels(x)[[2]], na.rm = TRUE) %>%
         fmt(0)
     ftot  <- function(x) sum(!is.na(x)) %>%
