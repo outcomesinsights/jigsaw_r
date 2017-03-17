@@ -187,11 +187,13 @@ glancenames <- function(df) {
     fsd   <- function(x) sqrt(var(x, na.rm = TRUE)) %>%
         fmt(digits)
     fpct  <- function(x) (scaling * sum(x, na.rm = TRUE) / sum(!is.na(x))) %>%
-        fmt(digits)
+        fmt(digits) %>%
+        if(scaling == 100) {paste0(., "%")}
     fnum  <- function(x) sum(x, na.rm = TRUE) %>%
         fmt(0)
     fpct_f  <- function(x) (scaling * sum(x == levels(x)[[2]], na.rm = TRUE) / sum(!is.na(x))) %>%
-        fmt(digits)
+        fmt(digits)  %>%
+        if(scaling == 100) {paste0(., "%")}
     fnum_f  <- function(x) sum(x == levels(x)[[2]], na.rm = TRUE) %>%
         fmt(0)
     ftot  <- function(x) sum(!is.na(x)) %>%
