@@ -14,7 +14,7 @@ wordtable(df, footer = NULL, header = NULL)
 \item{header}{Header text for the table}
 }
 \value{
-Returns a FlexTable object from the ReporteRs package.  To add this to a document, use the addtodoc() function
+Returns a FlexTable object.  To add this to a document, use the addtodoc() function
 }
 \description{
 Create a Table in Word
@@ -22,4 +22,3 @@ Create a Table in Word
 \examples{
 \dontrun{# nothing here yet}
 }
-

@@ -18,4 +18,3 @@ Fix Tidyr "Tidy" Names
 \examples{
 \dontrun{# nothing here yet}
 }
-

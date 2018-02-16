@@ -27,4 +27,3 @@ Windows must be negative (i.e., before index date).  Function parameters can be 
 \examples{
 \dontrun{# nothing here yet}
 }
-

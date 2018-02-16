@@ -1,7 +1,7 @@
 Package: jigsaw.r
 Type: Package
 Title: Tools for Working With Observational Data
-Version: 0.11
+Version: 0.12
 Date: 2015-10-29
 Author: Mark Danese
 Maintainer: Mark Danese <mark@outins.com>
@@ -14,7 +14,6 @@ Imports:
     data.table,
     jsonlite,
     magrittr,
-    ReporteRs,
-    ReporteRsjars,
-    rJava
-RoxygenNote: 5.0.1
+    officer,
+    flextable
+RoxygenNote: 6.0.1

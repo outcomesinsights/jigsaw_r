@@ -27,4 +27,3 @@ Note -- need to add function to deduplicate by day and allow user to over-ride
 \examples{
 \dontrun{# nothing here yet}
 }
-

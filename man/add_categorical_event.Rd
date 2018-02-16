@@ -26,4 +26,3 @@ smoker during the last 3 years?
 \examples{
 \dontrun{# nothing here yet}
 }
-

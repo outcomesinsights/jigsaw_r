@@ -20,4 +20,3 @@ This was taken from this StackOverflow answer:  http://stackoverflow.com/questio
 \examples{
 \dontrun{# nothing here yet}
 }
-

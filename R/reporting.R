@@ -56,13 +56,13 @@ fmt <- function(x, digits = 2) {
 
 #' Make Word File Using Template
 #'
-#' This simply uses the docx() function in ReporterRs package with the template file embedded
+#' This simply uses the read_docx() function in officer package with the template file embedded
 #' within this package.  An external template file can also be used.
 #'
 #' @param template_file File path to a .docx file that will be used as template.  Default is
 #' to use the included template file.
 #'
-#' @return Returns a document that can be used with ReporteRs package
+#' @return Returns a document that can be used with officer package
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
@@ -74,7 +74,7 @@ create_word_doc <- function(template_file = NULL){
             stop("The template_file does not seem to exist.  Please check it.")
         }
     }
-    ReporteRs::docx(template = template_file)
+    officer::read_docx(template = template_file)
 }
 
 
@@ -84,50 +84,53 @@ create_word_doc <- function(template_file = NULL){
 #' @param footer Footer text for the table
 #' @param header Header text for the table
 #'
-#' @return Returns a FlexTable object from the ReporteRs package.  To add this to a document, use the addtodoc() function
-#' @import ReporteRs
-#' @import ReporteRsjars
-#' @import rJava
+#' @return Returns a FlexTable object.  To add this to a document, use the addtodoc() function
+#' @import officer
+#' @import flextable
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
 wordtable <- function(df, footer = NULL, header = NULL){
-    ft <- FlexTable(df, header.columns = is.null(header), body.par.props = parProperties(padding = 3, text.align = "center"),
-        header.par.props = parProperties(padding = 3, text.align = "center"))
+    #ft <- FlexTable(df, header.columns = is.null(header), body.par.props = parProperties(padding = 3, text.align = "center"),
+    #    header.par.props = parProperties(padding = 3, text.align = "center"))
+    ft <- flextable(df)
     if(!is.null(header)) {
-        ft <- addHeaderRow(ft, value = names(df), text.properties = textBold())
-        ft <- addHeaderRow(ft, value = header, colspan = length(names(df)), first = TRUE, text.properties = textBold())
+        ft <- do.call( add_header, c( list( x = ft, top = FALSE), as.list(header) ) )
     }
     if(!is.null(footer)) {
-        ft <- addFooterRow(ft, value = footer, colspan = length(names(df)), text.properties = textItalic())
+        ft <-  do.call( add_footer, c( list( x = ft, top = FALSE), as.list(footer) ) )
+        ft <- italic(ft, part="footer")
     }
+
+    ft <- bold(ft, bold = TRUE, part = "header")
+    ft <- align(ft, align = "center", part = "header")
+    ft <- padding(ft, padding = 3, part = "header")
+
     return(ft)
 }
 
 #' Add To Word Document
 #'
-#' Adds a ReporteRs object to an existing document.  Generally, this will be a figure or a table, but it
-#' could be anything supported by the ReporteRs package.
+#' Adds a officer object to an existing document.  Generally, this will be a figure or a table, but it
+#' could be anything supported by the officer package.
 #'
 #' @param docu Document object to which the object will be added
-#' @param item Object from ReporteRs package to add
+#' @param item Object from officer package to add
 #' @param caption Text for the caption
 #' @param pagebreak Should there be a pagebreak added (default is TRUE)
 #'
 #' @return Adds object to document
-#' @import ReporteRs
-#' @import ReporteRsjars
-#' @import rJava
+#' @import officer
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
 addtodoc <- function(docu, item, caption = NULL, pagebreak = TRUE) {
     if(!is.null(caption)){
-        docu <- addParagraph(docu, value = caption, stylename = "Caption")
+        docu <- body_add_par(docu, value = caption, style = "Caption")
     }
-    docu <- addFlexTable(docu, item)
+    docu <- flextable::body_add_flextable(docu, item)
     if(pagebreak){
-        docu <- addPageBreak(docu)
+        docu <- body_add_break(docu)
     }
     return(docu)
 }

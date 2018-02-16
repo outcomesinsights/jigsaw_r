@@ -20,4 +20,3 @@ Format Numeric Value as Character
 \examples{
 \dontrun{# nothing here yet}
 }
-

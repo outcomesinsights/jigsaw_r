@@ -29,4 +29,3 @@ set to "verbose" output to help the user identify problems.
 \examples{
 \dontrun{# nothing here yet}
 }
-

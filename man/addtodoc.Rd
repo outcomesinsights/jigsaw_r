@@ -9,7 +9,7 @@ addtodoc(docu, item, caption = NULL, pagebreak = TRUE)
 \arguments{
 \item{docu}{Document object to which the object will be added}
 
-\item{item}{Object from ReporteRs package to add}
+\item{item}{Object from officer package to add}
 
 \item{caption}{Text for the caption}
 
@@ -19,10 +19,9 @@ addtodoc(docu, item, caption = NULL, pagebreak = TRUE)
 Adds object to document
 }
 \description{
-Adds a ReporteRs object to an existing document.  Generally, this will be a figure or a table, but it
-could be anything supported by the ReporteRs package.
+Adds a officer object to an existing document.  Generally, this will be a figure or a table, but it
+could be anything supported by the officer package.
 }
 \examples{
 \dontrun{# nothing here yet}
 }
-

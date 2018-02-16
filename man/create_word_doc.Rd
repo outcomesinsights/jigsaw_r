@@ -11,13 +11,12 @@ create_word_doc(template_file = NULL)
 to use the included template file.}
 }
 \value{
-Returns a document that can be used with ReporteRs package
+Returns a document that can be used with officer package
 }
 \description{
-This simply uses the docx() function in ReporterRs package with the template file embedded
+This simply uses the read_docx() function in officer package with the template file embedded
 within this package.  An external template file can also be used.
 }
 \examples{
 \dontrun{# nothing here yet}
 }
-

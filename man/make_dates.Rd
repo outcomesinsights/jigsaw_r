@@ -23,4 +23,3 @@ attributes or classes.  This is intended to run as part of load_data().
 \examples{
 \dontrun{# nothing here yet}
 }
-

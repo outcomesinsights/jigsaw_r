@@ -22,4 +22,3 @@ http://stackoverflow.com/questions/7235657/fastest-way-to-replace-nas-in-a-large
 \examples{
 \dontrun{# nothing here yet}
 }
-

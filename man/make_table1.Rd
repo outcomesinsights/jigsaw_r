@@ -23,4 +23,3 @@ Make "Table 1" to Summarize Variables in Data Frame
 \examples{
 \dontrun{# nothing here yet}
 }
-

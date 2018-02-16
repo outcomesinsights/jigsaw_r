@@ -18,4 +18,3 @@ Fix Tidyr "Glance" Names
 \examples{
 \dontrun{# nothing here yet}
 }
-

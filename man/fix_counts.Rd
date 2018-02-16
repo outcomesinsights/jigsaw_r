@@ -22,4 +22,3 @@ is now a flag variable reported in Jigsaw that indicates this explicitly.
 \examples{
 \dontrun{# nothing here yet}
 }
-
