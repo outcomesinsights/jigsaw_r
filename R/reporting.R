@@ -74,7 +74,7 @@ create_word_doc <- function(template_file = NULL){
             stop("The template_file does not seem to exist.  Please check it.")
         }
     }
-    officer::read_docx(template = template_file)
+    officer::read_docx(path = template_file)
 }
 
 
