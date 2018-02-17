@@ -360,8 +360,8 @@ glancenames <- function(df) {
 #' @export
 make_table1 <- function(varlist, dt, digits = 2){
     output <- vector("list", nrow(varlist))
-    for(i in seq_along(varlist[, 1])) {
-        output[[i]] <- .table_row(dt, varlist[i, 1], varlist[i, 2], digits = digits)
+    for(i in seq_along(nrow(varlist))) {
+        output[[i]] <- .table_row(dt, varlist[[1]][i], varlist[[2]][i], digits = digits)
     }
     return(data.table::rbindlist(output))
 }
