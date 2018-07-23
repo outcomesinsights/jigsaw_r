@@ -4,7 +4,7 @@
 \alias{make_table1}
 \title{Make "Table 1" to Summarize Variables in Data Frame}
 \usage{
-make_table1(varlist, dt, digits = 2)
+make_table1(varlist, dt, digits = 2, verbose = FALSE)
 }
 \arguments{
 \item{varlist}{Data frame containing 2 columns.  Column 1 is the names of the variables.
@@ -13,6 +13,8 @@ Column 2 is a name to be used as the variable name (typically longer than the va
 \item{dt}{Data table with variables of interest in it.}
 
 \item{digits}{Number of digits for continuous variables}
+
+\item{verbose}{Boolean When TRUE display debug information}
 }
 \value{
 Returns Table 1 as a data.table

@@ -90,10 +90,15 @@ create_word_doc <- function(template_file = NULL){
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-wordtable <- function(df, footer = NULL, header = NULL){
-    #ft <- FlexTable(df, header.columns = is.null(header), body.par.props = parProperties(padding = 3, text.align = "center"),
-    #    header.par.props = parProperties(padding = 3, text.align = "center"))
-    ft <- flextable(df)
+wordtable <- function(df, footer = NULL, header = NULL, autofit_table = FALSE){
+    # flextable requires the df names to be valid data.frame names
+    df_copy <- copy(df)
+    old_names <- copy(names(df_copy)) # Need to copy otherwise just a pointer to the df_copy names vector
+    new_names <- make.names(old_names)
+    setnames(df_copy, old_names, new_names)
+
+    ft <- flextable(df_copy)
+
     if(!is.null(header)) {
         ft <- do.call( add_header, c( list( x = ft, top = FALSE), as.list(header) ) )
     }
@@ -102,9 +107,19 @@ wordtable <- function(df, footer = NULL, header = NULL){
         ft <- italic(ft, part="footer")
     }
 
+    first_col_name <- names(df_copy)[1]
+
+    names(old_names) <- new_names
+
+    ft <- do.call( set_header_labels, c(list(ft),as.list(old_names)))
     ft <- bold(ft, bold = TRUE, part = "header")
-    ft <- align(ft, align = "center", part = "header")
-    ft <- padding(ft, padding = 3, part = "header")
+    ft <- align(ft, align = "center", part = "all")
+    ft <- padding(ft, padding = 3, part = "all")
+    #ft <- merge_v(ft, j = first_col_name, part = "body")
+
+    if( autofit_table ) {
+        ft <- autofit(ft)
+    }
 
     return(ft)
 }
@@ -117,6 +132,7 @@ wordtable <- function(df, footer = NULL, header = NULL){
 #' @param docu Document object to which the object will be added
 #' @param item Object from officer package to add
 #' @param caption Text for the caption
+#' @param depth Depth the table caption should be set
 #' @param pagebreak Should there be a pagebreak added (default is TRUE)
 #'
 #' @return Adds object to document
@@ -124,14 +140,19 @@ wordtable <- function(df, footer = NULL, header = NULL){
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-addtodoc <- function(docu, item, caption = NULL, pagebreak = TRUE) {
+addtodoc <- function(docu, item, caption = NULL, caption_depth = 1, pagebreak = TRUE) {
+
     if(!is.null(caption)){
-        docu <- body_add_par(docu, value = caption, style = "Caption")
+        docu <- body_add_par(docu, value = caption) %>%
+            add_table_caption(depth = caption_depth)
     }
+
     docu <- flextable::body_add_flextable(docu, item)
+
     if(pagebreak){
         docu <- body_add_break(docu)
     }
+
     return(docu)
 }
 
@@ -240,32 +261,17 @@ glancenames <- function(df) {
                     f2 = fnum_f,
                     f3 = ftot)
     } else if(check$type == "factor") { # factor - may want to coerce everything categorical to factor and use this
-        l <- length(levels(dt[[variable]]))
-        varname <- c(label, rep("", (l - 1)))
-        q <-
-            data.table(
-                varname,
-                count = dt[, lapply(.SD, function(x) sum(!is.na(x))), .SDcols = variable, by = variable],
-                total = dt[, lapply(.SD, function(x) sum(!is.na(x))), .SDcols = variable]
-            ) %>%
-                setnames(., 1:4, c("varname", "levels", "col2", "col3")) %>%
-                .[, col1 := (col2 / col3)] %>%
-                setcolorder(., c(1, 2, 5, 3, 4))
-        q$col1 <-
-            q$col1 %>%
-            round(2) %>%
-            format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 2)
-        q$col2 <-
-            q$col2 %>%
-            round(0) %>%
-            format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 0)
-        q$col3 <-
-            q$col3 %>%
-            round(0) %>%
-            format(., big.mark = ",", format = "f", scientific = FALSE, nsmall = 0)
-        return(q)
-    } else
-        stop("can't handle this data type yet")
+        # make sure variable is a factor
+        dt_up <- copy(dt)
+
+        if( !is.factor(dt[[variable]] )){
+            dt[[variable]] <- as.factor(dt[[variable]])
+        }
+        .summarize_cats(dt = dt_up, variable = variable, label = label )
+    } else{
+        warning(variable, " of type ", check$type, "can't handle this data type yet")
+        NULL
+    }
 }
 #' Make 5 Columns (internal)
 #'
@@ -285,7 +291,7 @@ glancenames <- function(df) {
 #' @export
 .make_5cols <- function(dt, variable, label, levsymbol, f1, f2, f3, ...){
     data.table(
-        varname = label,
+        varname = c(label, rep("",length(levsymbol)-1)),
         levels = levsymbol,
         col1 = dt[, lapply(.SD, f1), .SDcols = variable] %>%
             unlist(),
@@ -293,6 +299,16 @@ glancenames <- function(df) {
             unlist(),
         col3 = dt[, lapply(.SD, f3), .SDcols = variable] %>%
             unlist())
+}
+
+.summarize_cats <- function(dt, variable, label, digits = 2, scaling = 100, useNA = "no") {
+    res_dt <- as.data.table(table(dt[[variable]], useNA = useNA ))
+
+    res_dt[, .( varname = c(label, rep("",length(V1)-1)),
+                levels = V1,
+                col1 = paste0( fmt( N / sum(N) * scaling, digits), "%"),
+                col2 = fmt(N, 0),
+                col3 = fmt(sum(N),0) )]
 }
 
 #' Determine Data Type and/or Class
@@ -336,11 +352,17 @@ glancenames <- function(df) {
     d[,
       type := ifelse(
           class == "factor" & unique_levels == 2,
-          "2factor",
+          "factor",
           type)]
     d[,
       type := ifelse(
           class == "factor" & unique_levels > 2,
+          "factor",
+          type)]
+
+    d[,
+      type := ifelse(
+          class == "character" & unique_levels < 20,
           "factor",
           type)]
     return(d)
@@ -352,20 +374,52 @@ glancenames <- function(df) {
 #' Column 2 is a name to be used as the variable name (typically longer than the variable name).
 #' @param dt Data table with variables of interest in it.
 #' @param digits Number of digits for continuous variables
+#' @param verbose Boolean When TRUE display debug information
 #'
 #' @return Returns Table 1 as a data.table
 #'
 #' @examples
 #' \dontrun{# nothing here yet}
 #' @export
-make_table1 <- function(varlist, dt, digits = 2){
+make_table1 <- function(varlist, dt, digits = 2, verbose = FALSE){
     output <- vector("list", nrow(varlist))
-    for(i in seq_along(nrow(varlist))) {
-        output[[i]] <- .table_row(dt, varlist[[1]][i], varlist[[2]][i], digits = digits)
+
+    if(verbose) message("Generating Table 1")
+
+    for(i in 1:nrow(varlist)) {
+
+        if(verbose) message("...", varlist[[1]][i])
+
+        res <- .table_row(dt, varlist[[1]][i], varlist[[2]][i], digits = digits)
+
+        if( !is.null(res) ) {
+            output[[i]] <- res
+        }
     }
-    return(data.table::rbindlist(output))
+
+    res <- data.table::rbindlist(output)
+    setnames(res, c("Variable","Category","Mean or Pct", "SD or Count", "Sample Size"))
+
+    return(res)
 }
 
+#' Add a caption before a table
+#'
+#' @param x officer doc object
+#' @param style character word style
+#' @param depth Depth of sequence number
+#'
+#' @return Returns officer doc object
+#'
+#' @export
+add_table_caption <- function (x, style = NULL, depth)
+{
+    x <- slip_in_text(x, str = ": ", style = style, pos = "before")
+    x <- slip_in_seqfield(x, str = "SEQ table \\* Arabic \\s 1 \\* MERGEFORMAT",
+                          style = style, pos = "before")
+    x <- slip_in_text(x, str = "Table ", style = style, pos = "before")
+    x
+}
 # test data set for table 1 functions:
 # options(stringsAsFactors = FALSE)
 # # Test data set
